@@ -1,0 +1,36 @@
+name: automarket_mexico
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  app_links: ^3.4.1
+  flutter_dotenv: ^5.1.0
+  shared_preferences: ^2.2.2
+  provider: ^6.1.1
+  http: ^1.2.0
+  flutter_secure_storage: ^9.0.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1  
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - .env
+    - assets/icon/icon.png
+    - assets/images/car.png  
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
