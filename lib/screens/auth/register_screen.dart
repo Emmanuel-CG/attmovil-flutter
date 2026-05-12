@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:automarket_mexico/screens/login_screen.dart';
+import 'package:automarket_mexico/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';

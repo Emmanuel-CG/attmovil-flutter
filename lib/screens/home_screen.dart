@@ -1,15 +1,15 @@
-import 'package:automarket_mexico/screens/buy_car_screen.dart';
-import 'package:automarket_mexico/screens/login_screen.dart';
-import 'package:automarket_mexico/screens/my_cars_screen.dart';
-import 'package:automarket_mexico/screens/profile_screen.dart';
-import 'package:automarket_mexico/screens/register_screen.dart';
-import 'package:automarket_mexico/screens/sell_screen.dart';
+import 'package:automarket_mexico/screens/cars/buy_car_screen.dart';
+import 'package:automarket_mexico/screens/auth/login_screen.dart';
+import 'package:automarket_mexico/screens/cars/my_cars_screen.dart';
+import 'package:automarket_mexico/screens/profile/profile_screen.dart';
+import 'package:automarket_mexico/screens/auth/register_screen.dart';
+import 'package:automarket_mexico/screens/cars/sell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:automarket_mexico/widgets/card_car.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:automarket_mexico/services/auth_service.dart';
 final API_BASE_URL = dotenv.env['API_URL']!;
 
 
@@ -49,167 +49,408 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Drawer(
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 50),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-                ),
-              ),
-              child: const Column(
-                children: [
-                  Icon(Icons.directions_car, color: Colors.white, size: 40),
-                  SizedBox(height: 10),
-                  Text(
-                    "AutoMarket",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+drawer: Drawer(
+  child: FutureBuilder<Map<String, dynamic>?>(
+    future: AuthService.getUser(),
+
+    builder: (context, snapshot) {
+
+      final user = snapshot.data;
+      final isAdmin =
+    user != null &&
+    user["role"].toString().toLowerCase() == "admin";
+
+      return Column(
+        children: [
+
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 50),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF1565C0),
+                  Color(0xFF42A5F5),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            child: Column(
+              children: [
 
-            drawerItem(
-  icon: Icons.shopping_bag_outlined,
-  text: "Comprar",
-  onTap: () {
-    Navigator.pop(context);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const BuyScreen(),
-      ),
-    );
-  },
-),
-
-drawerItem(
-  icon: Icons.sell_outlined,
-  text: "Vender",
-  onTap: () {
-    Navigator.pop(context);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const SellScreen(),
-      ),
-    );
-  },
-),
-
-drawerItem(
-  icon: Icons.directions_car,
-  text: "Mis Autos",
-  onTap: () {
-    Navigator.pop(context);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MyCarsScreen(),
-      ),
-    );
-  },
-),
-
-            drawerItem(
-              icon: Icons.login_outlined,
-              text: "Iniciar Sesión",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LoginScreen(),
-                  ),
-                );
-              },
-            ),
-
-            drawerItem(
-              icon: Icons.person_outline,
-               text: "Mi Perfil",
-               onTap: () {
-                Navigator.pop(context);
- 
-               Navigator.push(
-                context,
-               MaterialPageRoute(
-                builder: (context) => const ProfileScreen(),
+                const Icon(
+                  Icons.directions_car,
+                  color: Colors.white,
+                  size: 40,
                 ),
-              );
-            },
+
+                const SizedBox(height: 10),
+
+                const Text(
+                  "AutoMarket",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                // USUARIO LOGEADO
+                if (user != null) ...[
+
+                  const SizedBox(height: 15),
+
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.white,
+
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.blue,
+                      size: 30,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    user["name"],
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  Text(
+                    user["email"],
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
 
-            const Spacer(),
+const SizedBox(height: 20),
+
+// ADMIN
+if (isAdmin) ...[
+
+  drawerItem(
+    icon: Icons.dashboard_outlined,
+    text: "Dashboard",
+    onTap: () {},
+  ),
+
+  drawerItem(
+    icon: Icons.group_outlined,
+    text: "Usuarios",
+    onTap: () {},
+  ),
+
+  drawerItem(
+    icon: Icons.directions_car_outlined,
+    text: "Autos",
+    onTap: () {},
+  ),
+
+  drawerItem(
+    icon: Icons.description_outlined,
+    text: "Reportes",
+    onTap: () {},
+  ),
+
+  drawerItem(
+    icon: Icons.settings_outlined,
+    text: "Configuración",
+    onTap: () {},
+  ),
+]
+
+// USUARIO NORMAL
+else ...[
+
+  drawerItem(
+    icon: Icons.shopping_bag_outlined,
+    text: "Comprar",
+    onTap: () {
+
+      Navigator.pop(context);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const BuyScreen(),
+        ),
+      );
+    },
+  ),
+
+  drawerItem(
+    icon: Icons.sell_outlined,
+    text: "Vender",
+    onTap: () {
+
+      Navigator.pop(context);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const SellScreen(),
+        ),
+      );
+    },
+  ),
+
+  if (user != null)
+
+    drawerItem(
+      icon: Icons.directions_car,
+      text: "Mis Autos",
+      onTap: () {
+
+        Navigator.pop(context);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const MyCarsScreen(),
+          ),
+        );
+      },
+    ),
+
+  if (user == null)
+
+    drawerItem(
+      icon: Icons.login_outlined,
+      text: "Iniciar Sesión",
+      onTap: () {
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const LoginScreen(),
+          ),
+        );
+      },
+    ),
+
+  if (user != null)
+
+    drawerItem(
+      icon: Icons.person_outline,
+      text: "Mi Perfil",
+      onTap: () {
+
+        Navigator.pop(context);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ProfileScreen(),
+          ),
+        );
+      },
+    ),
+],
+          const Spacer(),
+
+          // SIN LOGIN
+          if (user == null)
 
             Padding(
               padding: const EdgeInsets.all(20),
+
               child: SizedBox(
                 width: double.infinity,
                 height: 50,
+
                 child: ElevatedButton(
+
                   onPressed: () {
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RegisterScreen(),
+                        builder: (_) => const RegisterScreen(),
                       ),
                     );
                   },
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text("Registrarse"),
+
+                  child: const Text(
+                    "Registrarse",
+                  ),
                 ),
               ),
             ),
-          ],
+
+          // CON LOGIN
+          if (user != null)
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+
+                child: ElevatedButton.icon(
+
+                  onPressed: () async {
+
+                    await AuthService.logout();
+
+                    if (!context.mounted) return;
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const HomeScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+
+                  icon: const Icon(Icons.logout),
+
+                  label: const Text(
+                    "Cerrar Sesión",
+                  ),
+                ),
+              ),
+            ),
+        ],
+      );
+    },
+  ),
+),
+
+      appBar: AppBar(
+  toolbarHeight: 70,
+  backgroundColor: Colors.white,
+  elevation: 1,
+  iconTheme: const IconThemeData(color: Colors.black),
+
+  title: Row(
+    children: [
+      Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          Icons.directions_car,
+          color: Colors.white,
+          size: 22,
         ),
       ),
 
-      appBar: AppBar(
-        toolbarHeight: 70,
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.directions_car,
-                  color: Colors.white, size: 22),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              "AutoMarket",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-          ],
+      const SizedBox(width: 12),
+
+      const Text(
+        "AutoMarket",
+        style: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
         ),
       ),
+    ],
+  ),
+
+  actions: [
+
+    FutureBuilder<Map<String, dynamic>?>(
+      future: AuthService.getUser(),
+
+      builder: (context, snapshot) {
+
+        final user = snapshot.data;
+
+        // SI HAY SESIÓN
+        if (user != null) {
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+
+            child: GestureDetector(
+
+  onTap: () {
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ProfileScreen(),
+      ),
+    );
+  },
+
+  child: CircleAvatar(
+    backgroundColor: Colors.blue,
+
+              child: Text(
+                user["name"][0].toUpperCase(),
+
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ),
+          );
+        }
+
+        // SI NO HAY SESIÓN
+        return TextButton.icon(
+
+          onPressed: () {
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const LoginScreen(),
+              ),
+            );
+          },
+
+          icon: const Icon(
+            Icons.login,
+            color: Colors.blue,
+          ),
+
+          label: const Text(
+            "Iniciar sesión",
+            style: TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      },
+    ),
+  ],
+),
 
       body: SingleChildScrollView(
         child: Column(

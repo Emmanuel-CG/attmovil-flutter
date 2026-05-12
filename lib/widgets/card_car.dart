@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:automarket_mexico/screens/car_detail_screen.dart';
+import 'package:automarket_mexico/screens/cars/car_detail_screen.dart';
 
 class CarCard extends StatelessWidget {
   final int id; // 👈 IMPORTANTE

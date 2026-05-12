@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:automarket_mexico/services/auth_service.dart';
 import 'package:automarket_mexico/widgets/card_car.dart';
-import 'package:automarket_mexico/screens/sell_screen.dart';
+import 'package:automarket_mexico/screens/cars/sell_screen.dart';
 
 final API_BASE_URL = dotenv.env['API_URL']!;
 

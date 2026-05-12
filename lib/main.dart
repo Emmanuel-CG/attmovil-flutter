@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:automarket_mexico/screens/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:app_links/app_links.dart';
-import 'package:automarket_mexico/screens/reset_password_screen.dart';
+import 'package:automarket_mexico/screens/auth/reset_password_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 

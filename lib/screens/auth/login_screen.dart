@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:automarket_mexico/screens/home_screen.dart';
-import 'package:automarket_mexico/screens/recover_password_screen.dart';
+import 'package:automarket_mexico/screens/auth/recover_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,95 +29,85 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  Future<void> loginUser() async {
-    final url = Uri.parse("$API_BASE_URL/login");
+Future<void> loginUser() async {
+  final url = Uri.parse("$API_BASE_URL/login");
 
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: jsonEncode({
-          "email": correoCtrl.text,
-          "password": passwordCtrl.text,
-        }),
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({
+        "email": correoCtrl.text,
+        "password": passwordCtrl.text,
+      }),
+    );
+
+    if (!mounted) return;
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+
+      String token = data['token'];
+
+      final prefs = await SharedPreferences.getInstance();
+
+      // GUARDAR TOKEN
+      await prefs.setString("token", token);
+
+      // GUARDAR USUARIO
+      await prefs.setString(
+        "user",
+        jsonEncode(data['user']),
       );
 
-      if (!mounted) return;
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        String token = data['token'];
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("token", token);
-
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 10),
-                Text("Login exitoso"),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.all(16),
-          ),
-        );
-
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-          (route) => false,
-        );
-      } else {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text("Error en las credenciales"),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.all(16),
-          ),
-        );
-      }
-    } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
             children: [
-              Icon(Icons.wifi_off, color: Colors.white),
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 10),
+              Text("Login exitoso"),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
+        ),
+        (route) => false,
+      );
+
+    } else {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white),
               SizedBox(width: 10),
               Expanded(
-                child: Text("Error de conexión"),
+                child: Text("Error en las credenciales"),
               ),
             ],
           ),
-          backgroundColor: Colors.orange,
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -126,7 +116,32 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+
+  } catch (e) {
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.wifi_off, color: Colors.white),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text("Error de conexión"),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +260,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           loginUser();
+                          
                         }
+                        
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
