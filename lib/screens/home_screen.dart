@@ -1,3 +1,8 @@
+import 'package:automarket_mexico/screens/admin/admin_cars_screen.dart';
+import 'package:automarket_mexico/screens/admin/admin_configure_screen.dart';
+import 'package:automarket_mexico/screens/admin/admin_dashboard_screen.dart';
+import 'package:automarket_mexico/screens/admin/admin_reports_screen.dart';
+import 'package:automarket_mexico/screens/admin/admin_users_screen.dart';
 import 'package:automarket_mexico/screens/cars/buy_car_screen.dart';
 import 'package:automarket_mexico/screens/auth/login_screen.dart';
 import 'package:automarket_mexico/screens/cars/my_cars_screen.dart';
@@ -138,35 +143,85 @@ const SizedBox(height: 20),
 // ADMIN
 if (isAdmin) ...[
 
-  drawerItem(
-    icon: Icons.dashboard_outlined,
-    text: "Dashboard",
-    onTap: () {},
-  ),
+drawerItem(
+  icon: Icons.dashboard_outlined,
+  text: "Dashboard",
+  onTap: () {
 
-  drawerItem(
-    icon: Icons.group_outlined,
-    text: "Usuarios",
-    onTap: () {},
-  ),
+    Navigator.pop(context);
 
-  drawerItem(
-    icon: Icons.directions_car_outlined,
-    text: "Autos",
-    onTap: () {},
-  ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AdminDashboardScreen(),
+      ),
+    );
+  },
+),
 
-  drawerItem(
-    icon: Icons.description_outlined,
-    text: "Reportes",
-    onTap: () {},
-  ),
+drawerItem(
+  icon: Icons.group_outlined,
+  text: "Usuarios",
+  onTap: () {
 
-  drawerItem(
-    icon: Icons.settings_outlined,
-    text: "Configuración",
-    onTap: () {},
-  ),
+    Navigator.pop(context);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AdminUsersScreen(),
+      ),
+    );
+  },
+),
+
+drawerItem(
+  icon: Icons.directions_car_outlined,
+  text: "Autos",
+  onTap: () {
+
+    Navigator.pop(context);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AdminCarsScreen(),
+      ),
+    );
+  },
+),
+
+drawerItem(
+  icon: Icons.description_outlined,
+  text: "Reportes",
+  onTap: () {
+
+    Navigator.pop(context);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AdminReportsScreen(),
+      ),
+    );
+  },
+),
+
+drawerItem(
+  icon: Icons.settings_outlined,
+  text: "Configuración",
+  onTap: () {
+
+    Navigator.pop(context);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AdminSettingsScreen(),
+      ),
+    );
+  },
+),
 ]
 
 // USUARIO NORMAL
