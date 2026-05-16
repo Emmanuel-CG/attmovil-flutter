@@ -1,13 +1,133 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class AdminReportsScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:automarket_mexico/services/auth_service.dart';
+
+final API_BASE_URL = dotenv.env['API_URL']!;
+
+class AdminReportsScreen extends StatefulWidget {
   const AdminReportsScreen({super.key});
+
+  @override
+  State<AdminReportsScreen> createState() =>
+      _AdminReportsScreenState();
+}
+
+class _AdminReportsScreenState
+    extends State<AdminReportsScreen> {
+
+  bool loading = true;
+
+  List reports = [];
+
+  int activeReports = 0;
+
+  int resolvedReports = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchReports();
+  }
+
+  Future<void> fetchReports() async {
+
+    try {
+
+      final token =
+          await AuthService.getToken();
+
+      final response = await http.get(
+        Uri.parse(
+          "$API_BASE_URL/admin/reports",
+        ),
+
+        headers: {
+          "Accept": "application/json",
+          "Authorization": token ?? "",
+        },
+      );
+
+      final data =
+          jsonDecode(response.body);
+
+      setState(() {
+
+        reports = data;
+
+        activeReports =
+            reports.where((r) =>
+                r["resolved"] == false)
+            .length;
+
+        resolvedReports =
+            reports.where((r) =>
+                r["resolved"] == true)
+            .length;
+
+        loading = false;
+      });
+
+    } catch (e) {
+
+      debugPrint(e.toString());
+
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  Color severityColor(String severity) {
+
+    switch (severity) {
+
+      case "high":
+        return Colors.red;
+
+      case "medium":
+        return Colors.orange;
+
+      default:
+        return Colors.amber;
+    }
+  }
+
+  String severityLabel(String severity) {
+
+    switch (severity) {
+
+      case "high":
+        return "Alta";
+
+      case "medium":
+        return "Media";
+
+      default:
+        return "Baja";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
 
+    if (loading) {
+
+      return const Scaffold(
+        body: Center(
+          child:
+              CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor:
+          const Color(0xFFF5F5F5),
 
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -17,156 +137,337 @@ class AdminReportsScreen extends StatelessWidget {
           "Reportes",
           style: TextStyle(
             color: Colors.black,
-            fontWeight: FontWeight.bold,
+            fontWeight:
+                FontWeight.bold,
           ),
         ),
       ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(14),
+        padding:
+            const EdgeInsets.all(16),
 
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+
           children: [
 
             const Text(
               "Reportes y Alertas",
               style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
+                fontSize: 28,
+                fontWeight:
+                    FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
 
             const Text(
-              "Monitorea problemas, fraudes y violaciones de políticas",
+              "Monitorea fraudes y problemas",
               style: TextStyle(
                 color: Colors.grey,
                 fontSize: 15,
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 22),
 
             Row(
               children: [
 
                 Expanded(
                   child: reportCard(
-                    title: "Reportes Activos",
-                    value: "2",
-                    icon: Icons.error_outline,
-                    color: Colors.red,
+                    title:
+                        "Activos",
+
+                    value:
+                        "$activeReports",
+
+                    icon:
+                        Icons.error_outline,
+
+                    color:
+                        Colors.red,
                   ),
                 ),
 
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
 
                 Expanded(
                   child: reportCard(
-                    title: "Resueltos",
-                    value: "2",
-                    icon: Icons.trending_up,
-                    color: Colors.green,
+                    title:
+                        "Resueltos",
+
+                    value:
+                        "$resolvedReports",
+
+                    icon:
+                        Icons.check_circle,
+
+                    color:
+                        Colors.green,
                   ),
                 ),
 
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
 
                 Expanded(
                   child: reportCard(
-                    title: "Total",
-                    value: "4",
-                    icon: Icons.groups_outlined,
-                    color: Colors.blue,
+                    title:
+                        "Total",
+
+                    value:
+                        "${reports.length}",
+
+                    icon:
+                        Icons.groups_outlined,
+
+                    color:
+                        Colors.blue,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 24),
 
-            Container(
-              width: double.infinity,
+            ListView.builder(
+              shrinkWrap: true,
 
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
+              physics:
+                  const NeverScrollableScrollPhysics(),
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              itemCount:
+                  reports.length,
 
-                  Padding(
-                    padding: const EdgeInsets.all(22),
+              itemBuilder:
+                  (context, index) {
 
-                    child: const Text(
-                      "Lista de Reportes",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                final report =
+                    reports[index];
+
+                final resolved =
+                    report["resolved"] ==
+                        true;
+
+                final severity =
+                    report["severity"];
+
+                return Container(
+                  margin:
+                      const EdgeInsets.only(
+                          bottom: 16),
+
+                  padding:
+                      const EdgeInsets.all(
+                          18),
+
+                  decoration:
+                      BoxDecoration(
+                    color: resolved
+                        ? Colors.grey
+                            .shade100
+                        : severityColor(
+                                severity)
+                            .withOpacity(
+                                0.08),
+
+                    borderRadius:
+                        BorderRadius.circular(
+                            18),
+
+                    border: Border(
+                      left: BorderSide(
+                        color: resolved
+                            ? Colors.grey
+                            : severityColor(
+                                severity),
+
+                        width: 4,
                       ),
                     ),
+
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black
+                            .withOpacity(
+                                0.03),
+
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
 
-                  Divider(
-                    height: 1,
-                    color: Colors.grey.shade300,
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
+
+                    children: [
+
+                      Row(
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+
+                        children: [
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment
+                                      .start,
+
+                              children: [
+
+                                Text(
+                                  report["type"],
+
+                                  style:
+                                      const TextStyle(
+                                    fontSize:
+                                        18,
+
+                                    fontWeight:
+                                        FontWeight
+                                            .bold,
+                                  ),
+                                ),
+
+                                const SizedBox(
+                                    height:
+                                        8),
+
+                                Text(
+                                  report[
+                                      "description"],
+
+                                  style:
+                                      const TextStyle(
+                                    color: Colors
+                                        .black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(
+                              width: 12),
+
+                          Column(
+                            children: [
+
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal:
+                                      14,
+
+                                  vertical:
+                                      6,
+                                ),
+
+                                decoration:
+                                    BoxDecoration(
+                                  color: resolved
+                                      ? Colors.green
+                                          .withOpacity(
+                                              0.15)
+                                      : Colors.blue
+                                          .withOpacity(
+                                              0.15),
+
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                          20),
+                                ),
+
+                                child: Text(
+                                  resolved
+                                      ? "Resuelto"
+                                      : "Pendiente",
+
+                                  style:
+                                      TextStyle(
+                                    color: resolved
+                                        ? Colors
+                                            .green
+                                        : Colors
+                                            .blue,
+
+                                    fontWeight:
+                                        FontWeight
+                                            .bold,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(
+                                  height:
+                                      10),
+
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal:
+                                      14,
+
+                                  vertical:
+                                      6,
+                                ),
+
+                                decoration:
+                                    BoxDecoration(
+                                  color: severityColor(
+                                          severity)
+                                      .withOpacity(
+                                          0.15),
+
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                          20),
+                                ),
+
+                                child: Text(
+                                  severityLabel(
+                                      severity),
+
+                                  style:
+                                      TextStyle(
+                                    color:
+                                        severityColor(
+                                            severity),
+
+                                    fontWeight:
+                                        FontWeight
+                                            .bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                          height: 16),
+
+                      Text(
+                        "Reportado: ${report["date"]}",
+
+                        style:
+                            const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
-
-                  reportItem(
-                    title: "Anuncio Fraudulento",
-                    description:
-                        "Posible estafa detectada en anuncio de Toyota Corolla",
-
-                    date: "2024-11-12",
-
-                    pending: true,
-                    level: "Alta",
-                  ),
-
-                  reportItem(
-                    title: "Usuario Sospechoso",
-                    description:
-                        "Múltiples reportes contra usuario user123",
-
-                    date: "2024-11-11",
-
-                    pending: true,
-                    level: "Alta",
-                  ),
-
-                  reportItem(
-                    title: "Fotos Inapropiadas",
-                    description:
-                        "Imágenes no relacionadas con el vehículo",
-
-                    date: "2024-11-10",
-
-                    pending: false,
-                    level: "Media",
-                  ),
-
-                  reportItem(
-                    title: "Precio Sospechoso",
-                    description:
-                        "Precio significativamente bajo comparado el mercado",
-
-                    date: "2024-11-09",
-
-                    pending: false,
-                    level: "Baja",
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),
@@ -187,179 +488,53 @@ Widget reportCard({
 
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+
+      borderRadius:
+          BorderRadius.circular(18),
+
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.04),
-          blurRadius: 10,
+          color:
+              Colors.black.withOpacity(0.04),
+
+          blurRadius: 8,
         ),
       ],
     ),
 
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    child: Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+
       children: [
-
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
 
         Icon(
           icon,
-          color: color.withOpacity(0.3),
-          size: 42,
+          color: color,
+          size: 32,
         ),
-      ],
-    ),
-  );
-}
 
-Widget reportItem({
-  required String title,
-  required String description,
-  required String date,
-  required bool pending,
-  required String level,
-}) {
+        const SizedBox(height: 16),
 
-  return Container(
-    margin: const EdgeInsets.all(14),
-    padding: const EdgeInsets.all(18),
+        Text(
+          title,
 
-    decoration: BoxDecoration(
-      color: pending
-          ? Colors.red.withOpacity(0.10)
-          : Colors.grey.shade100,
-
-      borderRadius: BorderRadius.circular(16),
-
-      border: Border(
-        left: BorderSide(
-          color: pending
-              ? Colors.red.shade300
-              : Colors.grey.shade300,
-
-          width: 4,
-        ),
-      ),
-    ),
-
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                description,
-                style: const TextStyle(
-                  color: Colors.black87,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Text(
-                "Reportado: $date",
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
-              ),
-            ],
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
           ),
         ),
 
-        const SizedBox(width: 20),
+        const SizedBox(height: 6),
 
-        Column(
-          children: [
+        Text(
+          value,
 
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 6,
-              ),
-
-              decoration: BoxDecoration(
-                color: pending
-                    ? Colors.blue.withOpacity(0.15)
-                    : Colors.green.withOpacity(0.15),
-
-                borderRadius: BorderRadius.circular(20),
-              ),
-
-              child: Text(
-                pending
-                    ? "Pendiente"
-                    : "Resuelto",
-
-                style: TextStyle(
-                  color: pending
-                      ? Colors.blue
-                      : Colors.green,
-
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 6,
-              ),
-
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(20),
-              ),
-
-              child: Text(
-                level,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+          style: TextStyle(
+            color: color,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     ),

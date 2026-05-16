@@ -1,10 +1,94 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class AdminDashboardScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:automarket_mexico/services/auth_service.dart';
+
+final API_BASE_URL = dotenv.env['API_URL']!;
+
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
+  State<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState
+    extends State<AdminDashboardScreen> {
+
+  final String apiUrl =
+      "$API_BASE_URL/admin/dashboard";
+
+  bool loading = true;
+
+  Map<String, dynamic> stats = {};
+
+  List recentCars = [];
+
+  List recentUsers = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchDashboard();
+  }
+
+  Future<void> fetchDashboard() async {
+
+    try {
+
+      final token =
+          await AuthService.getToken();
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+
+        headers: {
+          "Accept": "application/json",
+          "Authorization": token ?? "",
+        },
+      );
+
+      final data =
+          jsonDecode(response.body);
+
+      setState(() {
+
+        stats = data["stats"];
+
+        recentCars =
+            data["recentCars"];
+
+        recentUsers =
+            data["recentUsers"];
+
+        loading = false;
+      });
+
+    } catch (e) {
+
+      debugPrint(e.toString());
+
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+
+    if (loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -12,6 +96,7 @@ class AdminDashboardScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+
         title: const Text(
           "Dashboard",
           style: TextStyle(
@@ -25,114 +110,115 @@ class AdminDashboardScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
 
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+
           children: [
 
             const Text(
               "Dashboard",
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
 
             const Text(
-              "Bienvenido al panel de administración de AutoMarket México",
+              "Panel de administración",
               style: TextStyle(
                 color: Colors.grey,
-                fontSize: 16,
+                fontSize: 15,
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 22),
 
-            GridView.count(
-              crossAxisCount: 2,
+            GridView(
               shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 14,
-              childAspectRatio: 1.5,
 
-              children: const [
+              physics:
+                  const NeverScrollableScrollPhysics(),
+
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+                childAspectRatio: 1.4,
+              ),
+
+              children: [
 
                 DashboardCard(
                   title: "Usuarios",
-                  value: "1,248",
+                  value:
+                      "${stats["users"] ?? 0}",
                   icon: Icons.group_outlined,
                   color: Colors.blue,
                 ),
 
                 DashboardCard(
-                  title: "Autos Listados",
-                  value: "856",
-                  icon: Icons.directions_car_outlined,
+                  title: "Autos",
+                  value:
+                      "${stats["cars"] ?? 0}",
+                  icon:
+                      Icons.directions_car_outlined,
                   color: Colors.green,
-                ),
-
-                DashboardCard(
-                  title: "Ingresos",
-                  value: "\$125,400",
-                  icon: Icons.trending_up,
-                  color: Colors.purple,
                 ),
 
                 DashboardCard(
                   title: "Reportes",
-                  value: "12",
-                  icon: Icons.description_outlined,
-                  color: Colors.deepOrange,
+                  value:
+                      "${stats["reports"] ?? 0}",
+                  icon:
+                      Icons.description_outlined,
+                  color: Colors.orange,
                 ),
               ],
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 24),
 
-            Column(
-              children: [
+            DashboardSection(
+              title: "Autos recientes",
+              color: Colors.blue,
 
-                DashboardSection(
-                  title: "Autos Recientes Pendientes",
-                  color: Colors.blue,
+              children: recentCars.map((car) {
 
-                  items: const [
-                    DashboardItem(
-                      title: "Toyota Corolla",
-                      subtitle: "Por: Juan Pérez",
-                      time: "Hace 2 horas",
-                    ),
+                return DashboardItemWidget(
+                  title:
+                      "${car["brand"]} ${car["model"]}",
 
-                    DashboardItem(
-                      title: "Honda Civic",
-                      subtitle: "Por: María González",
-                      time: "Hace 5 horas",
-                    ),
-                  ],
-                ),
+                  subtitle:
+                      "Por: ${car["seller"]}",
 
-                const SizedBox(height: 20),
+                  time:
+                      car["created_at"] ?? "",
+                );
+              }).toList(),
+            ),
 
-                DashboardSection(
-                  title: "Usuarios Nuevos",
-                  color: Colors.green,
+            const SizedBox(height: 20),
 
-                  items: const [
-                    DashboardItem(
-                      title: "Carlos López",
-                      subtitle: "carlos@example.com",
-                      time: "Hoy",
-                    ),
+            DashboardSection(
+              title: "Usuarios nuevos",
+              color: Colors.green,
 
-                    DashboardItem(
-                      title: "Ana Rodríguez",
-                      subtitle: "ana@example.com",
-                      time: "Ayer",
-                    ),
-                  ],
-                ),
-              ],
+              children: recentUsers.map((user) {
+
+                return DashboardItemWidget(
+                  title:
+                      user["name"],
+
+                  subtitle:
+                      user["email"],
+
+                  time:
+                      user["created_at"] ?? "",
+                );
+              }).toList(),
             ),
           ],
         ),
@@ -144,8 +230,11 @@ class AdminDashboardScreen extends StatelessWidget {
 class DashboardCard extends StatelessWidget {
 
   final String title;
+
   final String value;
+
   final IconData icon;
+
   final Color color;
 
   const DashboardCard({
@@ -160,61 +249,76 @@ class DashboardCard extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+
+        borderRadius:
+            BorderRadius.circular(18),
+
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color:
+                Colors.black.withOpacity(0.05),
+
             blurRadius: 8,
           ),
         ],
       ),
 
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween,
+
         children: [
 
+          Container(
+            padding: const EdgeInsets.all(12),
+
+            decoration: BoxDecoration(
+              color: color,
+
+              borderRadius:
+                  BorderRadius.circular(14),
+            ),
+
+            child: Icon(
+              icon,
+              color: Colors.white,
+            ),
+          ),
+
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
             children: [
 
               Text(
                 title,
+
                 style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 14,
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
 
               Text(
                 value,
+
                 style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  fontWeight:
+                      FontWeight.bold,
                 ),
               ),
             ],
-          ),
-
-          Container(
-            padding: const EdgeInsets.all(14),
-
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(16),
-            ),
-
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 28,
-            ),
           ),
         ],
       ),
@@ -225,14 +329,16 @@ class DashboardCard extends StatelessWidget {
 class DashboardSection extends StatelessWidget {
 
   final String title;
+
   final Color color;
-  final List<DashboardItem> items;
+
+  final List<Widget> children;
 
   const DashboardSection({
     super.key,
     required this.title,
     required this.color,
-    required this.items,
+    required this.children,
   });
 
   @override
@@ -240,104 +346,135 @@ class DashboardSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+
+      padding: const EdgeInsets.all(20),
 
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+
+        borderRadius:
+            BorderRadius.circular(20),
+
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color:
+                Colors.black.withOpacity(0.05),
+
             blurRadius: 8,
           ),
         ],
       ),
 
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
         children: [
 
           Text(
             title,
+
             style: const TextStyle(
-              fontSize: 26,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
 
-          const SizedBox(height: 25),
+          const SizedBox(height: 22),
 
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 22),
-
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  Container(
-                    width: 4,
-                    height: 75,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-
-                  const SizedBox(width: 16),
-
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-
-                      Text(
-                        item.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      Text(
-                        item.subtitle,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      Text(
-                        item.time,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+          ...children,
         ],
       ),
     );
   }
 }
 
-class DashboardItem {
+class DashboardItemWidget
+    extends StatelessWidget {
 
   final String title;
+
   final String subtitle;
+
   final String time;
 
-  const DashboardItem({
+  const DashboardItemWidget({
+    super.key,
     required this.title,
     required this.subtitle,
     required this.time,
   });
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Padding(
+      padding:
+          const EdgeInsets.only(bottom: 18),
+
+      child: Row(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+
+          Container(
+            width: 4,
+            height: 60,
+
+            decoration: BoxDecoration(
+              color: Colors.blue,
+
+              borderRadius:
+                  BorderRadius.circular(10),
+            ),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
+              children: [
+
+                Text(
+                  title,
+
+                  style: const TextStyle(
+                    fontWeight:
+                        FontWeight.bold,
+
+                    fontSize: 18,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  subtitle,
+
+                  style: const TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  time,
+
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -84,21 +84,170 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                 children: [
 
                   // 🔹 TITULO + PRECIO
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "${car!['brand']} ${car!['model']}",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const Icon(Icons.share),
-                    ],
-                  ),
+Row(
+  mainAxisAlignment:
+      MainAxisAlignment.spaceBetween,
+
+  crossAxisAlignment:
+      CrossAxisAlignment.start,
+
+  children: [
+
+    Expanded(
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+        children: [
+
+          Text(
+            "${car!['brand']} ${car!['model']}",
+
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight:
+                  FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          const Text(
+            "Vehículo publicado",
+
+            style: TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    ),
+
+    PopupMenuButton<String>(
+
+      icon: Container(
+        padding: const EdgeInsets.all(10),
+
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.08),
+
+          borderRadius:
+              BorderRadius.circular(12),
+        ),
+
+        child: const Icon(
+          Icons.flag_outlined,
+          color: Colors.red,
+        ),
+      ),
+
+      shape: RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(18),
+      ),
+
+      elevation: 8,
+
+      onSelected: (value) {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          SnackBar(
+            content: Text(
+              "Reporte enviado: $value",
+            ),
+          ),
+        );
+      },
+
+      itemBuilder: (context) => [
+
+        PopupMenuItem(
+          value:
+              "Anuncio Fraudulento",
+
+          child: Row(
+            children: [
+
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.red,
+              ),
+
+              const SizedBox(width: 12),
+
+              const Text(
+                "Anuncio Fraudulento",
+              ),
+            ],
+          ),
+        ),
+
+        PopupMenuItem(
+          value:
+              "Usuario Sospechoso",
+
+          child: Row(
+            children: [
+
+              const Icon(
+                Icons.person_off_outlined,
+                color: Colors.orange,
+              ),
+
+              const SizedBox(width: 12),
+
+              const Text(
+                "Usuario Sospechoso",
+              ),
+            ],
+          ),
+        ),
+
+PopupMenuItem(
+  value: "Fotos Inapropiadas",
+
+  child: Row(
+    children: [
+
+      const Icon(
+        Icons.hide_image_outlined,
+        color: Colors.purple,
+      ),
+
+      const SizedBox(width: 12),
+
+      const Text(
+        "Fotos Inapropiadas",
+      ),
+    ],
+  ),
+),
+
+        PopupMenuItem(
+          value:
+              "Precio Sospechoso",
+
+          child: Row(
+            children: [
+
+              const Icon(
+                Icons.attach_money,
+                color: Colors.amber,
+              ),
+
+              const SizedBox(width: 12),
+
+              const Text(
+                "Precio Sospechoso",
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ],
+),
 
                   const SizedBox(height: 10),
 

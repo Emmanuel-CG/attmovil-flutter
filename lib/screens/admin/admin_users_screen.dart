@@ -1,13 +1,121 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class AdminUsersScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:automarket_mexico/services/auth_service.dart';
+
+final API_BASE_URL = dotenv.env['API_URL']!;
+
+class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
+
+  @override
+  State<AdminUsersScreen> createState() =>
+      _AdminUsersScreenState();
+}
+
+class _AdminUsersScreenState
+    extends State<AdminUsersScreen> {
+
+  bool loading = true;
+
+  List users = [];
+
+  List filteredUsers = [];
+
+  final TextEditingController searchController =
+      TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchUsers();
+  }
+
+  Future<void> fetchUsers() async {
+
+    try {
+
+      final token =
+          await AuthService.getToken();
+
+      final response = await http.get(
+        Uri.parse(
+          "$API_BASE_URL/admin/users",
+        ),
+
+        headers: {
+          "Accept": "application/json",
+          "Authorization": token ?? "",
+        },
+      );
+
+      final data =
+          jsonDecode(response.body);
+
+      setState(() {
+
+        users = data;
+
+        filteredUsers = data;
+
+        loading = false;
+      });
+
+    } catch (e) {
+
+      debugPrint(e.toString());
+
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  void filterUsers(String value) {
+
+    setState(() {
+
+      filteredUsers = users.where((user) {
+
+        final name =
+            user["name"]
+                .toString()
+                .toLowerCase();
+
+        final email =
+            user["email"]
+                .toString()
+                .toLowerCase();
+
+        return name.contains(
+                  value.toLowerCase(),
+                ) ||
+            email.contains(
+              value.toLowerCase(),
+            );
+      }).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
 
+    if (loading) {
+      return const Scaffold(
+        body: Center(
+          child:
+              CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor:
+          const Color(0xFFF5F5F5),
 
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -17,378 +125,403 @@ class AdminUsersScreen extends StatelessWidget {
           "Usuarios",
           style: TextStyle(
             color: Colors.black,
-            fontWeight: FontWeight.bold,
+            fontWeight:
+                FontWeight.bold,
           ),
         ),
       ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(14),
+        padding:
+            const EdgeInsets.all(16),
 
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+
           children: [
 
             const Text(
               "Gestión de Usuarios",
               style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
+                fontSize: 28,
+                fontWeight:
+                    FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
 
             const Text(
-              "Administra y supervisa todos los usuarios de la plataforma",
+              "Administra todos los usuarios",
               style: TextStyle(
                 color: Colors.grey,
-                fontSize: 16,
+                fontSize: 15,
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 22),
 
             Container(
-              padding: const EdgeInsets.all(20),
+              padding:
+                  const EdgeInsets.all(16),
 
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+
+                borderRadius:
+                    BorderRadius.circular(18),
+
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
+                    color: Colors.black
+                        .withOpacity(0.04),
+
+                    blurRadius: 8,
                   ),
                 ],
               ),
 
               child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Buscar por nombre o email...",
+                controller:
+                    searchController,
 
-                  prefixIcon: const Icon(
+                onChanged: filterUsers,
+
+                decoration: InputDecoration(
+                  hintText:
+                      "Buscar usuario...",
+
+                  prefixIcon:
+                      const Icon(
                     Icons.search,
                   ),
 
                   filled: true,
-                  fillColor: Colors.white,
 
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide(
-                      color: Colors.grey.shade300,
+                  fillColor:
+                      Colors.white,
+
+                  border:
+                      OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                            16),
+
+                    borderSide:
+                        BorderSide(
+                      color:
+                          Colors.grey
+                              .shade300,
                     ),
                   ),
 
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide(
-                      color: Colors.grey.shade300,
+                  enabledBorder:
+                      OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                            16),
+
+                    borderSide:
+                        BorderSide(
+                      color:
+                          Colors.grey
+                              .shade300,
                     ),
                   ),
 
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: const BorderSide(
-                      color: Colors.blue,
+                  focusedBorder:
+                      OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(
+                            16),
+
+                    borderSide:
+                        const BorderSide(
+                      color:
+                          Colors.blue,
                     ),
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 22),
 
-            Container(
-              width: double.infinity,
+            ListView.builder(
+              shrinkWrap: true,
 
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
+              physics:
+                  const NeverScrollableScrollPhysics(),
+
+              itemCount:
+                  filteredUsers.length,
+
+              itemBuilder:
+                  (context, index) {
+
+                final user =
+                    filteredUsers[index];
+
+                final verified =
+                    user["verified"] ==
+                        true;
+
+                final active =
+                    user["status"] ==
+                        "activo";
+
+                return Container(
+                  margin:
+                      const EdgeInsets.only(
+                          bottom: 16),
+
+                  padding:
+                      const EdgeInsets.all(
+                          18),
+
+                  decoration:
+                      BoxDecoration(
+                    color: Colors.white,
+
+                    borderRadius:
+                        BorderRadius.circular(
+                            20),
+
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black
+                            .withOpacity(
+                                0.04),
+
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
-                ],
-              ),
 
-              child: Column(
-                children: [
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
 
-                  userRowHeader(),
+                    children: [
 
-                  userRow(
-                    name: "Juan Pérez",
-                    email: "juan@example.com",
-                    phone: "55-1234-5678",
-                    verified: true,
-                    cars: "3",
-                    active: true,
+                      Row(
+                        children: [
+
+                          CircleAvatar(
+                            radius: 24,
+
+                            backgroundColor:
+                                Colors.blue
+                                    .withOpacity(
+                                        0.15),
+
+                            child: Text(
+                              user["name"][0],
+
+                              style:
+                                  const TextStyle(
+                                color:
+                                    Colors
+                                        .blue,
+
+                                fontWeight:
+                                    FontWeight
+                                        .bold,
+
+                                fontSize:
+                                    18,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(
+                              width: 14),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment
+                                      .start,
+
+                              children: [
+
+                                Text(
+                                  user["name"],
+
+                                  style:
+                                      const TextStyle(
+                                    fontWeight:
+                                        FontWeight
+                                            .bold,
+
+                                    fontSize:
+                                        18,
+                                  ),
+                                ),
+
+                                const SizedBox(
+                                    height: 4),
+
+                                Text(
+                                  user["email"],
+
+                                  style:
+                                      const TextStyle(
+                                    color: Colors
+                                        .grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const Icon(
+                            Icons.more_vert,
+                            color:
+                                Colors.grey,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                          height: 18),
+
+                      Row(
+                        children: [
+
+                          const Icon(
+                            Icons.phone_outlined,
+                            size: 18,
+                            color:
+                                Colors.grey,
+                          ),
+
+                          const SizedBox(
+                              width: 8),
+
+                          Text(
+                            user["phone"] ??
+                                "",
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                          height: 14),
+
+                      Row(
+                        children: [
+
+                          Icon(
+                            verified
+                                ? Icons
+                                    .check_circle
+                                : Icons
+                                    .cancel,
+
+                            color: verified
+                                ? Colors
+                                    .green
+                                : Colors.red,
+
+                            size: 20,
+                          ),
+
+                          const SizedBox(
+                              width: 8),
+
+                          Text(
+                            verified
+                                ? "Verificado"
+                                : "No verificado",
+
+                            style: TextStyle(
+                              color: verified
+                                  ? Colors
+                                      .green
+                                  : Colors
+                                      .red,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                          height: 14),
+
+                      Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment
+                                .spaceBetween,
+
+                        children: [
+
+                          Text(
+                            "Autos: ${user["totalCars"]}",
+
+                            style:
+                                const TextStyle(
+                              fontWeight:
+                                  FontWeight
+                                      .bold,
+                            ),
+                          ),
+
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(
+                              horizontal:
+                                  14,
+
+                              vertical: 6,
+                            ),
+
+                            decoration:
+                                BoxDecoration(
+                              color: active
+                                  ? Colors.green
+                                      .withOpacity(
+                                          0.15)
+                                  : Colors.red
+                                      .withOpacity(
+                                          0.15),
+
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      20),
+                            ),
+
+                            child: Text(
+                              active
+                                  ? "Activo"
+                                  : "Suspendido",
+
+                              style:
+                                  TextStyle(
+                                color: active
+                                    ? Colors
+                                        .green
+                                    : Colors
+                                        .red,
+
+                                fontWeight:
+                                    FontWeight
+                                        .bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-
-                  userRow(
-                    name: "María González",
-                    email: "maria@example.com",
-                    phone: "33-9876-5432",
-                    verified: false,
-                    cars: "1",
-                    active: true,
-                  ),
-
-                  userRow(
-                    name: "Carlos Ramírez",
-                    email: "carlos@example.com",
-                    phone: "81-5555-1234",
-                    verified: true,
-                    cars: "2",
-                    active: false,
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),
       ),
     );
   }
-}
-
-Widget userRowHeader() {
-
-  return Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 22,
-      vertical: 18,
-    ),
-
-    decoration: BoxDecoration(
-      border: Border(
-        bottom: BorderSide(
-          color: Colors.grey.shade300,
-        ),
-      ),
-    ),
-
-    child: const Row(
-      children: [
-
-        Expanded(
-          flex: 2,
-          child: Text(
-            "Nombre",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 3,
-          child: Text(
-            "Email",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 2,
-          child: Text(
-            "Teléfono",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 2,
-          child: Text(
-            "Verificado",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        Expanded(
-          child: Text(
-            "Autos",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 2,
-          child: Text(
-            "Estado",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        Expanded(
-          child: Text(
-            "Acciones",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Widget userRow({
-  required String name,
-  required String email,
-  required String phone,
-  required bool verified,
-  required String cars,
-  required bool active,
-}) {
-
-  return Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 22,
-      vertical: 20,
-    ),
-
-    decoration: BoxDecoration(
-      border: Border(
-        bottom: BorderSide(
-          color: Colors.grey.shade200,
-        ),
-      ),
-    ),
-
-    child: Row(
-      children: [
-
-        Expanded(
-          flex: 2,
-
-          child: Text(
-            name,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 3,
-
-          child: Text(
-            email,
-            style: const TextStyle(
-              color: Colors.black87,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 2,
-
-          child: Text(
-            phone,
-            style: const TextStyle(
-              color: Colors.black87,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 2,
-
-          child: Row(
-            children: [
-
-              Icon(
-                verified
-                    ? Icons.check_circle_outline
-                    : Icons.cancel_outlined,
-
-                color: verified
-                    ? Colors.green
-                    : Colors.deepOrange,
-
-                size: 20,
-              ),
-
-              const SizedBox(width: 6),
-
-              Text(
-                verified ? "Sí" : "No",
-
-                style: TextStyle(
-                  color: verified
-                      ? Colors.green
-                      : Colors.deepOrange,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: Text(
-            cars,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        Expanded(
-          flex: 2,
-
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 6,
-            ),
-
-            decoration: BoxDecoration(
-              color: active
-                  ? Colors.green.withOpacity(0.15)
-                  : Colors.red.withOpacity(0.15),
-
-              borderRadius: BorderRadius.circular(20),
-            ),
-
-            child: Text(
-              active
-                  ? "Activo"
-                  : "Suspendido",
-
-              textAlign: TextAlign.center,
-
-              style: TextStyle(
-                color: active
-                    ? Colors.green
-                    : Colors.red,
-
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-
-        const Expanded(
-          child: Icon(
-            Icons.more_vert,
-            color: Colors.grey,
-          ),
-        ),
-      ],
-    ),
-  );
 }
