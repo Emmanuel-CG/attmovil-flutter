@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 final API_BASE_URL = dotenv.env['API_URL']!;
 
@@ -63,58 +64,70 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
 SizedBox(
   height: 240,
 
-  child: PageView.builder(
-    itemCount: car!['images'] != null
-        ? car!['images'].length
-        : 0,
+  child: // 🔹 CARRUSEL AUTO PLAY
+CarouselSlider.builder(
 
-    itemBuilder: (context, index) {
+  itemCount: car!['images'] != null
+      ? car!['images'].length
+      : 0,
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-        ),
+  options: CarouselOptions(
+    height: 240,
 
-        child: ClipRRect(
-          borderRadius:
-              BorderRadius.circular(16),
+    autoPlay: true,
 
-          child: Image.network(
-            car!['images'][index],
+    autoPlayInterval:
+        const Duration(seconds: 3),
 
-            width: double.infinity,
-            fit: BoxFit.cover,
+    enlargeCenterPage: true,
 
-            loadingBuilder:
-                (context, child, progress) {
+    viewportFraction: 0.95,
 
-              if (progress == null) {
-                return child;
-              }
-
-              return Container(
-                color: Colors.grey.shade200,
-
-                child: const Center(
-                  child:
-                      CircularProgressIndicator(),
-                ),
-              );
-            },
-
-            errorBuilder:
-                (context, error, stackTrace) {
-
-              return Image.asset(
-                "assets/images/car.png",
-                fit: BoxFit.cover,
-              );
-            },
-          ),
-        ),
-      );
-    },
+    enableInfiniteScroll: true,
   ),
+
+  itemBuilder:
+      (context, index, realIndex) {
+
+    return ClipRRect(
+      borderRadius:
+          BorderRadius.circular(16),
+
+      child: Image.network(
+        car!['images'][index],
+
+        width: double.infinity,
+        fit: BoxFit.cover,
+
+        loadingBuilder:
+            (context, child, progress) {
+
+          if (progress == null) {
+            return child;
+          }
+
+          return Container(
+            color: Colors.grey.shade200,
+
+            child: const Center(
+              child:
+                  CircularProgressIndicator(),
+            ),
+          );
+        },
+
+        errorBuilder:
+            (context, error, stackTrace) {
+
+          return Image.asset(
+            "assets/images/car.png",
+            fit: BoxFit.cover,
+          );
+        },
+      ),
+    );
+  },
+),
 ),
 
             const SizedBox(height: 10),
