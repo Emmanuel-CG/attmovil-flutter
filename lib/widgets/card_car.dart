@@ -55,43 +55,55 @@
               // 🔹 IMAGEN
   // 🔹 IMAGEN
   ClipRRect(
-    borderRadius:
-        const BorderRadius.vertical(top: Radius.circular(18)),
-    child: image.isNotEmpty
-        ? Image.network(
-            image,
-            height: 150,
-            width: double.infinity,
-            fit: BoxFit.cover,
-
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-
-              return Container(
-                height: 150,
-                color: Colors.grey.shade200,
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            },
-
-            errorBuilder: (context, error, stackTrace) {
-              return Image.asset(
-                "assets/images/car.png",
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              );
-            },
-          )
-        : Image.asset(
-            "assets/images/car.png",
-            height: 150,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          ),
+  borderRadius:
+      const BorderRadius.vertical(
+    top: Radius.circular(18),
   ),
+
+  child: SizedBox(
+    height: 150,
+
+    child: PageView.builder(
+      itemCount: image.length,
+
+      itemBuilder: (context, index) {
+
+        return Image.network(
+          image[index],
+
+          width: double.infinity,
+          fit: BoxFit.cover,
+
+          loadingBuilder:
+              (context, child, progress) {
+
+            if (progress == null) {
+              return child;
+            }
+
+            return Container(
+              color: Colors.grey.shade200,
+
+              child: const Center(
+                child:
+                    CircularProgressIndicator(),
+              ),
+            );
+          },
+
+          errorBuilder:
+              (context, error, stackTrace) {
+
+            return Image.asset(
+              "assets/images/car.png",
+              fit: BoxFit.cover,
+            );
+          },
+        );
+      },
+    ),
+  ),
+),
 
               // 🔹 CONTENIDO
               Padding(
