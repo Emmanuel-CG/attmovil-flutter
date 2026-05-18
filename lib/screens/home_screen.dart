@@ -664,7 +664,7 @@ Padding(
             price: "\$${car['price']}",
             image: car['image'] != null &&
             car['image'].isNotEmpty
-            ? car['images'][0]
+            ? car['image'][0]
             : "",
             year: car['year'].toString(),
             km: "${car['mileage']} km",
