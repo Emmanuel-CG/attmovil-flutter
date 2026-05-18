@@ -180,12 +180,9 @@ final response = await http.get(
                                 CarCard(
                                   id: car['id'],
                                   title:
-                                      "${car['brand']} ${car['model']}",
+                                  "${car['brand']} ${car['model']}",
                                   price: "\$${car['price']}",
-                                    image: car['images'] != null &&
-          car['images'].isNotEmpty
-      ? car['images'][0]
-      : "",
+                                  image: car['images'] ?? [],
                                   year: car['year'].toString(),
                                   km: "${car['mileage']} km",
                                   fuel: car['fuelType'] ?? "",

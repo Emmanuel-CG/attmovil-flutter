@@ -5,7 +5,7 @@
     final int id; // 👈 IMPORTANTE
     final String title;
     final String price;
-    final String image;
+    final List<dynamic> image;
     final String year;
     final String km;
     final String fuel;
@@ -63,45 +63,53 @@
   child: SizedBox(
     height: 150,
 
-    child: PageView.builder(
-      itemCount: image.length,
+child: image.isEmpty
 
-      itemBuilder: (context, index) {
+    ? Image.asset(
+        "assets/images/car.png",
+        fit: BoxFit.cover,
+        width: double.infinity,
+      )
 
-        return Image.network(
-          image[index],
+    : PageView.builder(
+        itemCount: image.length,
 
-          width: double.infinity,
-          fit: BoxFit.cover,
+        itemBuilder: (context, index) {
 
-          loadingBuilder:
-              (context, child, progress) {
+          return Image.network(
+            image[index],
 
-            if (progress == null) {
-              return child;
-            }
+            width: double.infinity,
+            fit: BoxFit.cover,
 
-            return Container(
-              color: Colors.grey.shade200,
+            loadingBuilder:
+                (context, child, progress) {
 
-              child: const Center(
-                child:
-                    CircularProgressIndicator(),
-              ),
-            );
-          },
+              if (progress == null) {
+                return child;
+              }
 
-          errorBuilder:
-              (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey.shade200,
 
-            return Image.asset(
-              "assets/images/car.png",
-              fit: BoxFit.cover,
-            );
-          },
-        );
-      },
-    ),
+                child: const Center(
+                  child:
+                      CircularProgressIndicator(),
+                ),
+              );
+            },
+
+            errorBuilder:
+                (context, error, stackTrace) {
+
+              return Image.asset(
+                "assets/images/car.png",
+                fit: BoxFit.cover,
+              );
+            },
+          );
+        },
+      ),
   ),
 ),
 

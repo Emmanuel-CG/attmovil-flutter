@@ -658,19 +658,18 @@ Padding(
         itemBuilder: (context, index) {
           final car = cars[index];
 
-          return CarCard(
-            id: car['id'],
-            title: "${car['brand']} ${car['model']}",
-            price: "\$${car['price']}",
-            image: car['image'] != null &&
-            car['image'].isNotEmpty
-            ? car['image'][0]
-            : "",
-            year: car['year'].toString(),
-            km: "${car['mileage']} km",
-            fuel: car['fuelType'] ?? "",
-            location: car['location'] ?? "",
-          );
+return CarCard(
+  id: car['id'],
+  title: "${car['brand']} ${car['model']}",
+  price: "\$${car['price']}",
+
+  image: car['images'] ?? [],
+
+  year: car['year'].toString(),
+  km: "${car['mileage']} km",
+  fuel: car['fuelType'] ?? "",
+  location: car['location'] ?? "",
+);
         },
       ),
       ),
