@@ -1,5 +1,6 @@
   import 'package:flutter/material.dart';
   import 'package:automarket_mexico/screens/cars/car_detail_screen.dart';
+  import 'package:carousel_slider/carousel_slider.dart';
 
   class CarCard extends StatelessWidget {
     final int id; // 👈 IMPORTANTE
@@ -71,45 +72,62 @@ child: image.isEmpty
         width: double.infinity,
       )
 
-    : PageView.builder(
-        itemCount: image.length,
+    : CarouselSlider.builder(
 
-        itemBuilder: (context, index) {
+  itemCount: image.length,
 
-          return Image.network(
-            image[index],
+  options: CarouselOptions(
+    height: 150,
 
-            width: double.infinity,
-            fit: BoxFit.cover,
+    autoPlay: true,
 
-            loadingBuilder:
-                (context, child, progress) {
+    autoPlayInterval:
+        const Duration(seconds: 3),
 
-              if (progress == null) {
-                return child;
-              }
+    viewportFraction: 1,
 
-              return Container(
-                color: Colors.grey.shade200,
+    enlargeCenterPage: false,
 
-                child: const Center(
-                  child:
-                      CircularProgressIndicator(),
-                ),
-              );
-            },
+    enableInfiniteScroll: true,
+  ),
 
-            errorBuilder:
-                (context, error, stackTrace) {
+  itemBuilder:
+      (context, index, realIndex) {
 
-              return Image.asset(
-                "assets/images/car.png",
-                fit: BoxFit.cover,
-              );
-            },
-          );
-        },
-      ),
+    return Image.network(
+      image[index],
+
+      width: double.infinity,
+      fit: BoxFit.cover,
+
+      loadingBuilder:
+          (context, child, progress) {
+
+        if (progress == null) {
+          return child;
+        }
+
+        return Container(
+          color: Colors.grey.shade200,
+
+          child: const Center(
+            child:
+                CircularProgressIndicator(),
+          ),
+        );
+      },
+
+      errorBuilder:
+          (context, error, stackTrace) {
+
+        return Image.asset(
+          "assets/images/car.png",
+          fit: BoxFit.cover,
+        );
+      },
+    );
+  },
+),
   ),
 ),
 
