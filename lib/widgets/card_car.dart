@@ -3,7 +3,7 @@
   import 'package:carousel_slider/carousel_slider.dart';
 
   class CarCard extends StatelessWidget {
-    final int id; // 👈 IMPORTANTE
+    final int id;
     final String title;
     final String price;
     final List<dynamic> image;
