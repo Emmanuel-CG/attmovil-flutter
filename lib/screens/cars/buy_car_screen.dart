@@ -204,7 +204,10 @@ class _BuyScreenState extends State<BuyScreen> {
                             id: car['id'],
                             title: "${car['brand']} ${car['model']}",
                             price: "\$${car['price']}",
-                            image: "",
+                            image: car['images'] != null &&
+                            car['images'].isNotEmpty
+                            ? car['images'][0]
+                            : "",
                             year: car['year'].toString(),
                             km: "${car['mileage']} km",
                             fuel: car['fuelType'] ?? "",
