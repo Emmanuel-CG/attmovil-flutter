@@ -59,50 +59,62 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
           children: [
 
             // 🔹 IMAGEN
-ClipRRect(
-  borderRadius: BorderRadius.circular(12),
-  child: car!['images'] != null &&
-          car!['images'].isNotEmpty
-      ? Image.network(
-          car!['images'][0],
+// 🔹 CARRUSEL IMÁGENES
+SizedBox(
+  height: 240,
 
-          height: 220,
-          width: double.infinity,
-          fit: BoxFit.cover,
+  child: PageView.builder(
+    itemCount: car!['images'] != null
+        ? car!['images'].length
+        : 0,
 
-          loadingBuilder:
-              (context, child, loadingProgress) {
+    itemBuilder: (context, index) {
 
-            if (loadingProgress == null) {
-              return child;
-            }
-
-            return Container(
-              height: 220,
-              color: Colors.grey.shade200,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          },
-
-          errorBuilder:
-              (context, error, stackTrace) {
-
-            return Image.asset(
-              "assets/images/car.png",
-              height: 220,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            );
-          },
-        )
-      : Image.asset(
-          "assets/images/car.png",
-          height: 220,
-          width: double.infinity,
-          fit: BoxFit.cover,
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
         ),
+
+        child: ClipRRect(
+          borderRadius:
+              BorderRadius.circular(16),
+
+          child: Image.network(
+            car!['images'][index],
+
+            width: double.infinity,
+            fit: BoxFit.cover,
+
+            loadingBuilder:
+                (context, child, progress) {
+
+              if (progress == null) {
+                return child;
+              }
+
+              return Container(
+                color: Colors.grey.shade200,
+
+                child: const Center(
+                  child:
+                      CircularProgressIndicator(),
+                ),
+              );
+            },
+
+            errorBuilder:
+                (context, error, stackTrace) {
+
+              return Image.asset(
+                "assets/images/car.png",
+                fit: BoxFit.cover,
+              );
+            },
+          ),
+        ),
+      );
+    },
+  ),
 ),
 
             const SizedBox(height: 10),
