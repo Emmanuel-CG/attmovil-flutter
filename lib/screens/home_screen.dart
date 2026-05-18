@@ -662,8 +662,8 @@ Padding(
             id: car['id'],
             title: "${car['brand']} ${car['model']}",
             price: "\$${car['price']}",
-            image: car['images'] != null &&
-            car['images'].isNotEmpty
+            image: car['image'] != null &&
+            car['image'].isNotEmpty
             ? car['images'][0]
             : "",
             year: car['year'].toString(),

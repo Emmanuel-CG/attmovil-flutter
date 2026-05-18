@@ -5,7 +5,7 @@
     final int id; // 👈 IMPORTANTE
     final String title;
     final String price;
-    final String image;
+    final List<dynamic> image;
     final String year;
     final String km;
     final String fuel;
