@@ -53,8 +53,6 @@
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // 🔹 IMAGEN
-  // 🔹 IMAGEN
   ClipRRect(
   borderRadius:
       const BorderRadius.vertical(

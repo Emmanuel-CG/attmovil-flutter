@@ -45,24 +45,25 @@ class _MainAppState extends State<MainApp> {
     }
   }
 
-  void handleLink(Uri uri) {
-    if (uri.host == "reset-password") {
-      final token = uri.queryParameters['token'];
+void handleLink(Uri uri) {
+  if (uri.path == "/reset-password") {
 
-      if (token != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (_) => ResetPasswordScreen(
-                email: "",
-                token: token,
-              ),
+    final token = uri.queryParameters['token'];
+
+    if (token != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => ResetPasswordScreen(
+              email: "",
+              token: token,
             ),
-          );
-        });
-      }
+          ),
+        );
+      });
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
