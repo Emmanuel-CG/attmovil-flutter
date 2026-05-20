@@ -38,6 +38,7 @@ class _MainAppState extends State<MainApp> {
 
   void initDeepLinks() async {
     _appLinks.uriLinkStream.listen((uri) {
+      // ignore: unnecessary_null_comparison
       if (uri != null) {
         handleLink(uri);
       }
