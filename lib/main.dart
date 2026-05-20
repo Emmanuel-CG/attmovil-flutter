@@ -6,6 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:app_links/app_links.dart';
 import 'package:automarket_mexico/screens/auth/reset_password_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'package:flutter/services.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -91,12 +93,16 @@ class _MainAppState extends State<MainApp> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("No acepto"),
-            ),
+TextButton(
+  onPressed: () {
+    if (Platform.isAndroid) {
+      SystemNavigator.pop();
+    } else if (Platform.isIOS) {
+      exit(0);
+    }
+  },
+  child: const Text("No acepto"),
+),  
             ElevatedButton(
               onPressed: () async {
                 final prefs = await SharedPreferences.getInstance();
