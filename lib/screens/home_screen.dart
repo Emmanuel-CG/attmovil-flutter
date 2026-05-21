@@ -243,21 +243,43 @@ else ...[
     },
   ),
 
-  drawerItem(
-    icon: Icons.sell_outlined,
-    text: "Vender",
-    onTap: () {
+drawerItem(
+  icon: Icons.sell_outlined,
+  text: "Vender",
+  onTap: () async {
 
-      Navigator.pop(context);
+    final token = await AuthService.getToken();
+
+    Navigator.pop(context);
+
+    // Si no está logueado
+    if (token == null) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Necesitas iniciar sesión para vender"),
+        ),
+      );
 
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => const SellScreen(),
+          builder: (_) => const LoginScreen(),
         ),
       );
-    },
-  ),
+
+      return;
+    }
+
+    // Si sí está logueado
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SellScreen(),
+      ),
+    );
+  },
+),
 
   if (user != null)
 
