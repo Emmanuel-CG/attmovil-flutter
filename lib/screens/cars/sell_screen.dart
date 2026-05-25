@@ -330,14 +330,6 @@ Future<void> getAIPrediction() async {
                       ),
                     ),
                     _field(
-                      "Precio *",
-                      _input(
-                        "250000",
-                        precioController,
-                      ),
-                    ),
-
-                    _field(
                       "Kilometraje *",
                       _input(
                         "50000",
@@ -357,9 +349,82 @@ Future<void> getAIPrediction() async {
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                  
+                    if (aiPrice != null)
+  Container(
+    width: double.infinity,
 
-                    const Text("Descripción"),
+    padding:
+        const EdgeInsets.all(16),
+
+    margin:
+        const EdgeInsets.only(
+      bottom: 12,
+    ),
+
+    decoration: BoxDecoration(
+      borderRadius:
+          BorderRadius.circular(16),
+
+      gradient: const LinearGradient(
+        colors: [
+          Colors.blue,
+          Colors.cyan,
+        ],
+      ),
+    ),
+
+    child: Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+
+      children: [
+
+        const Text(
+          "Precio sugerido por IA",
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+        ),
+
+        const SizedBox(height: 5),
+
+        Text(
+          "\$${aiPrice!.toStringAsFixed(0)} MXN",
+
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight:
+                FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 4),
+
+        const Text(
+          "Basado en vehículos similares del mercado",
+
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  ),
+  _field(
+  "Precio *",
+  _input(
+    "250000",
+    precioController,
+  ),
+),
+
+const SizedBox(height: 10),
+
+const Text("Descripción"),
 
                     const SizedBox(height: 5),
 
@@ -699,7 +764,12 @@ Future<void> getAIPrediction() async {
     return TextFormField(
       controller: controller,
 
-    onChanged: (_) => getAIPrediction(),
+    onChanged: (_) {
+
+  if (controller != precioController) {
+    getAIPrediction();
+  }
+},
 
       validator: (value) {
         if (value == null ||
