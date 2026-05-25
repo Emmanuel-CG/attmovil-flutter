@@ -329,70 +329,6 @@ Future<void> getAIPrediction() async {
                         anioController,
                       ),
                     ),
-                    if (aiPrice != null)
-  Container(
-    width: double.infinity,
-
-    padding:
-        const EdgeInsets.all(16),
-
-    margin:
-        const EdgeInsets.only(
-      bottom: 12,
-    ),
-
-    decoration: BoxDecoration(
-      borderRadius:
-          BorderRadius.circular(16),
-
-      gradient: LinearGradient(
-        colors: [
-          Colors.blue,
-          Colors.cyan,
-        ],
-      ),
-    ),
-
-    child: Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
-
-      children: [
-
-        const Text(
-          "Precio sugerido por IA",
-          style: TextStyle(
-            color: Colors.white70,
-          ),
-        ),
-
-        const SizedBox(height: 5),
-
-        Text(
-          "\$${aiPrice!.toStringAsFixed(0)} MXN",
-
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight:
-                FontWeight.bold,
-          ),
-        ),
-
-        const SizedBox(height: 4),
-
-        const Text(
-          "Basado en vehículos similares del mercado",
-
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    ),
-  ),
-
                     _field(
                       "Precio *",
                       _input(
@@ -413,7 +349,6 @@ Future<void> getAIPrediction() async {
                       "Transmisión",
                       _transmisionDropdown(),
                     ),
-
                     _field(
                       "Teléfono",
                       _input(
@@ -447,6 +382,8 @@ Future<void> getAIPrediction() async {
                         "Describe tu auto...",
                       ),
                     ),
+
+                    
 
                     const SizedBox(height: 20),
 
