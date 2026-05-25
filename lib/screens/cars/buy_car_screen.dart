@@ -220,7 +220,6 @@ return CarCard(
     );
   }
 
-  // 🔥 DROPDOWN CORREGIDO (SIN ERRORES)
   Widget _dropdownFilter(
     String currentValue,
     Map<String, String> options,

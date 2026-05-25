@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:automarket_mexico/services/auth_service.dart';
 import 'package:automarket_mexico/screens/cars/my_cars_screen.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
 
 final API_BASE_URL = dotenv.env['API_URL']!;
 
@@ -125,6 +126,81 @@ class _SellScreenState
       });
     }
   }
+
+
+bool loading = false;
+
+double? aiPrice;
+
+Future<void> getAIPrediction() async {
+
+  try {
+
+    if (
+      selectedMarca == null ||
+      modeloController.text.isEmpty ||
+      anioController.text.isEmpty ||
+      kmController.text.isEmpty ||
+      selectedTransmision == null
+    ) {
+      return;
+    }
+
+    String transmission =
+        selectedTransmision!;
+
+    if (transmission == "Automática") {
+      transmission = "Automatic";
+    }
+
+    final response = await http.post(
+      Uri.parse(
+        "https://automarket-ia.onrender.com/predict",
+      ),
+
+      headers: {
+        "Content-Type":
+            "application/json",
+      },
+
+      body: jsonEncode({
+
+        "Brand": selectedMarca,
+
+        "Model":
+            modeloController.text,
+
+        "Model_Ye": int.tryParse(
+              anioController.text,
+            ) ??
+            0,
+
+        "Kilometer": int.tryParse(
+              kmController.text,
+            ) ??
+            0,
+
+        "Fuel_Type": "Petrol",
+
+        "Transmiss": transmission,
+      }),
+    );
+
+    final data =
+        jsonDecode(response.body);
+
+    setState(() {
+
+      aiPrice =
+          (data["price"] as num)
+              .toDouble();
+    });
+
+  } catch (e) {
+
+    print(e);
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -253,6 +329,69 @@ class _SellScreenState
                         anioController,
                       ),
                     ),
+                    if (aiPrice != null)
+  Container(
+    width: double.infinity,
+
+    padding:
+        const EdgeInsets.all(16),
+
+    margin:
+        const EdgeInsets.only(
+      bottom: 12,
+    ),
+
+    decoration: BoxDecoration(
+      borderRadius:
+          BorderRadius.circular(16),
+
+      gradient: LinearGradient(
+        colors: [
+          Colors.blue,
+          Colors.cyan,
+        ],
+      ),
+    ),
+
+    child: Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+
+      children: [
+
+        const Text(
+          "Precio sugerido por IA",
+          style: TextStyle(
+            color: Colors.white70,
+          ),
+        ),
+
+        const SizedBox(height: 5),
+
+        Text(
+          "\$${aiPrice!.toStringAsFixed(0)} MXN",
+
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight:
+                FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 4),
+
+        const Text(
+          "Basado en vehículos similares del mercado",
+
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ),
+  ),
 
                     _field(
                       "Precio *",
@@ -428,137 +567,153 @@ class _SellScreenState
                         const SizedBox(width: 10),
 
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async {
+  child: ElevatedButton(
 
-                              if (_formKey.currentState!
-                                  .validate()) {
+    onPressed: loading
+        ? null
+        : () async {
 
-                                final data = {
+            if (_formKey.currentState!
+                .validate()) {
 
-                                  "brand":
-                                      selectedMarca,
+              setState(() {
+                loading = true;
+              });
 
-                                  "model":
-                                      modeloController
-                                          .text,
+              final data = {
 
-                                  "year":
-                                      int.tryParse(
-                                            anioController
-                                                .text,
-                                          ) ??
-                                          0,
+                "brand":
+                    selectedMarca,
 
-                                  "price":
-                                      int.tryParse(
-                                            precioController
-                                                .text,
-                                          ) ??
-                                          0,
+                "model":
+                    modeloController.text,
 
-                                  "mileage":
-                                      int.tryParse(
-                                            kmController
-                                                .text,
-                                          ) ??
-                                          0,
+                "year":
+                    int.tryParse(
+                          anioController.text,
+                        ) ??
+                        0,
 
-                                  "transmission":
-                                      selectedTransmision,
+                "price":
+                    int.tryParse(
+                          precioController.text,
+                        ) ??
+                        0,
 
-                                  "fuelType":
-                                      "Gasolina",
+                "mileage":
+                    int.tryParse(
+                          kmController.text,
+                        ) ??
+                        0,
 
-                                  "color":
-                                      "Blanco",
+                "transmission":
+                    selectedTransmision,
 
-                                  "location":
-                                      "México",
+                "fuelType":
+                    "Gasolina",
 
-                                  "description":
-                                      descripcionController
-                                          .text,
+                "color":
+                    "Blanco",
 
-                                  "phone":
-                                      telefonoController
-                                          .text,
-                                };
+                "location":
+                    "México",
 
-                                bool success =
-                                    await createCar(
-                                  data,
-                                  images,
-                                );
+                "description":
+                    descripcionController.text,
 
-                                if (!mounted) return;
+                "phone":
+                    telefonoController.text,
+              };
 
-                                if (success) {
+              bool success =
+                  await createCar(
+                data,
+                images,
+              );
 
-                                  ScaffoldMessenger.of(
-                                          context)
-                                      .showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "Auto publicado",
-                                      ),
+              if (!mounted) return;
 
-                                      backgroundColor:
-                                          Colors.green,
-                                    ),
-                                  );
+              setState(() {
+                loading = false;
+              });
 
-                                  Future.delayed(
-                                    const Duration(
-                                      seconds: 1,
-                                    ),
+              if (success) {
 
-                                    () {
+                ScaffoldMessenger.of(
+                        context)
+                    .showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Auto publicado",
+                    ),
 
-                                      Navigator.pushReplacement(
-                                        context,
+                    backgroundColor:
+                        Colors.green,
+                  ),
+                );
 
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  const MyCarsScreen(),
-                                        ),
-                                      );
-                                    },
-                                  );
+                Future.delayed(
+                  const Duration(
+                    seconds: 1,
+                  ),
 
-                                } else {
+                  () {
 
-                                  ScaffoldMessenger.of(
-                                          context)
-                                      .showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "Error al publicar",
-                                      ),
+                    Navigator.pushReplacement(
+                      context,
 
-                                      backgroundColor:
-                                          Colors.red,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                const MyCarsScreen(),
+                      ),
+                    );
+                  },
+                );
 
-                            style:
-                                ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Colors.blue,
+              } else {
 
-                              foregroundColor:
-                                  Colors.white,
-                            ),
+                ScaffoldMessenger.of(
+                        context)
+                    .showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Error al publicar",
+                    ),
 
-                            child: const Text(
-                              "Publicar",
-                            ),
-                          ),
-                        ),
+                    backgroundColor:
+                        Colors.red,
+                  ),
+                );
+              }
+            }
+          },
+
+    style:
+        ElevatedButton.styleFrom(
+      backgroundColor:
+          Colors.blue,
+
+      foregroundColor:
+          Colors.white,
+    ),
+
+    child: loading
+        ? const SizedBox(
+            width: 20,
+            height: 20,
+
+            child:
+                CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
+            ),
+          )
+        : const Text(
+            "Publicar",
+          ),
+  ),
+)
                       ],
                     ),
                   ],
@@ -606,6 +761,8 @@ class _SellScreenState
   ) {
     return TextFormField(
       controller: controller,
+
+    onChanged: (_) => getAIPrediction(),
 
       validator: (value) {
         if (value == null ||
@@ -676,6 +833,7 @@ class _SellScreenState
         setState(() {
           selectedMarca = value;
         });
+         getAIPrediction();
       },
     );
   }
@@ -718,6 +876,7 @@ class _SellScreenState
         setState(() {
           selectedTransmision = value;
         });
+        getAIPrediction();
       },
     );
   }
